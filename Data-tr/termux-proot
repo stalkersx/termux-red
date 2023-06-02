@@ -1,0 +1,45 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+# check termux-proot running or not
+if [[ $SHELL == "/bin/bash" ]];then
+	#echo "[!] already running...!!!"
+	exit
+fi
+
+# exit shell termux
+unset LD_PRELOAD
+
+# mount Linux file system android:
+for f in system vendor data storage sdcard sbin root sys dev proc; do
+        ARGS="$ARGS -b /$f:/$f"
+done
+
+# set sdcard to home
+if [ -d $HOME ];then
+	ARGS="$ARGS -b $HOME:/home"
+fi
+
+# Set /home as current directory:
+ARGS="$ARGS --cwd=/home"
+
+# Root of the file system:
+ARGS="$ARGS -r $PREFIX"
+
+# Shell to execute:
+PROGRAM=/bin/bash
+if [ -x $HOME/.termux/shell ]; then
+        PROGRAM=`readlink -f $HOME/.termux/shell`
+fi
+
+# export variable need
+export SHELL=/bin/bash
+export HOME=/home
+export -n PREFIX
+
+# running shell no-root termux-proot
+if [ -f $PREFIX/bin/proot ]; then
+	ARGS="$ARGS $PROGRAM -l"
+	exec $PREFIX/bin/proot $ARGS
+else
+	apt install proot
+fi
