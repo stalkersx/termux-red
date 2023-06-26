@@ -31,8 +31,14 @@ if [ -x $HOME/.termux/shell ]; then
         PROGRAM=`readlink -f $HOME/.termux/shell`
 fi
 
+# make a directory home in sdcard
+if ! [ -d /sdcard/termux_home ];then
+  mkdir /sdcard/termux_home
+fi
+
 # export variable need
 export SHELL=/bin/bash
+export SHOME=/sdcard/termux_home
 export HOME=/home
 export -n PREFIX
 
