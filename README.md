@@ -1,4 +1,5 @@
 # termuxred
+# version 1.0
 
 tengkorak merah
 
