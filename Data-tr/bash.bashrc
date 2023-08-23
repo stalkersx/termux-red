@@ -12,7 +12,7 @@ export HISTCONTROL=ignoreboth
 
 # Default command line prompt.
 PROMPT_DIRTRIM=2
-PS1='\[\e[31m\]╭—(\[\e[34m\]$(whoami)@$(hostname)\[\e[31m\])-[\[\e[0m\]\w\[\e[31m\]]\n\[\e[0;31m\]╰——\[\e[0;34m\]\$\[\e[32m\] '
+PS1='\[\e[31m\]╭—(\[\e[32m\]$(whoami)@$(hostname)\[\e[31m\])-[\[\e[0m\]\w\[\e[31m\]]\n\[\e[0;31m\]╰——\[\e[0;32m\]\$\[\e[32m\] '
 
 # Handles nonexistent commands.
 # If user has entered command which invokes non-available
