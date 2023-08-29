@@ -29,7 +29,7 @@ if [ -f $PREFIX/etc/logo-tengkorak.ascii ];then clear
   echo -e "\e[0;32m $glogo"
 fi
 
-# running termux-proot
-if [ -f /data/data/com.termux/files/usr/bin/termux-proot ];then termux-proot; fi
+# login termux-red
+if [ -f $PREFIX/bin/termux-red ];then termux-red; fi
 
 #@stalkersx

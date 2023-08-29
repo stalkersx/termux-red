@@ -6,15 +6,29 @@ if [[ $SHELL == "/bin/bash" ]];then
 	exit
 fi
 
+# login shell termux-red or distro-linux
+read -p "[t]termux-red [k]kali-linux ? " loginshell
+if [[ $loginshell == "t" ]];then echo
+elif [[ $loginshell == "k" ]];then
+  if [ -f $PREFIX/../kali-linux/start-kali.sh ];then
+    $PREFIX/../kali-linux/start-kali.sh
+  else
+    echo "! kali-linux not installed"
+  fi
+  exit
+else
+  exit
+fi
+
 # check directory chroot
 if ! [ -d $PREFIX/../termux-red ];then
   mkdir $PREFIX/../termux-red
 fi
 
-# import directory to chroot
-for i in bin etc lib tmp var; do
+# import user directory to termux-red
+for i in $(ls $PREFIX); do
   if ! [ -d $PREFIX/../termux-red/$i ];then
-    ln -s "$PREFIX/$i" "$PREFIX/../termux-red"
+    ln -s "$PREFIX/$i" "$PREFIX/../termux-red/"
   fi
 done
 
@@ -35,16 +49,14 @@ fi
 # Set /home as current directory:
 ARGS="$ARGS --cwd=/home"
 
-# usr directory
-for g in bin include lib libexec share man sbin; do
-  if [[ $g == "sbin" ]];then
-    ARGS="$ARGS -b /$g:/usr/$g"; continue
-  fi
-  ARGS="$ARGS -b $PREFIX/$g:/usr/$g"
-done
+# set /kali-linux
+linux="kali-linux"
+if [ -d $PREFIX/../$linux ];then
+	ARGS="$ARGS -b $PREFIX/../$linux:/$linux"
+fi
 
 # Root of the file system:
-ARGS="$ARGS -r /data/data/com.termux/files/termux-red"
+ARGS="$ARGS -r /data/data/com.termux/files/termux-red/"
 
 # Shell to execute:
 PROGRAM=/bin/bash
