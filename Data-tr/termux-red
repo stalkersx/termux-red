@@ -1,79 +1,90 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-# check termux-proot running or not
-if [[ $SHELL == "/bin/bash" ]];then
-	#echo "[!] already running...!!!"
+shellnoroot(){
+  # check termux-proot running or not
+  if [[ $SHELL == "/bin/bash" ]];then
+	#echo "[!] termux-red already running...!!!"
 	exit
-fi
-
-# login shell termux-red or distro-linux
-read -p "[t]termux-red [k]kali-linux ? " loginshell
-if [[ $loginshell == "t" ]];then echo
-elif [[ $loginshell == "k" ]];then
-  if [ -f $PREFIX/../kali-linux/start-kali.sh ];then
-    $PREFIX/../kali-linux/start-kali.sh
-  else
-    echo "! kali-linux not installed"
   fi
-  exit
-else
-  exit
-fi
 
-# check directory chroot
-if ! [ -d $PREFIX/../termux-red ];then
-  mkdir $PREFIX/../termux-red
-fi
+  # login shell termux-red or distro-linux
+  #read -p "[t]termux-red [k]kali-linux ? " loginshell
+  #if [[ $loginshell == "t" ]];then echo
+  #elif [[ $loginshell == "k" ]];then
+  #  if [ -f $PREFIX/../kali-linux/start-kali.sh ];then
+  #    $PREFIX/../kali-linux/start-kali.sh
+  #  else
+  #    echo "! kali-linux not installed"
+  #  fi
+  #  exit
+  #else
+  #  exit
+  #fi
 
-# import user directory to termux-red
-for i in $(ls $PREFIX); do
-  if ! [ -d $PREFIX/../termux-red/$i ];then
-    ln -s "$PREFIX/$i" "$PREFIX/../termux-red/"
+  # check directory chroot
+  if ! [ -d $PREFIX/../termux-red ];then
+	mkdir $PREFIX/../termux-red
   fi
-done
 
-# exit shell termux
-unset LD_PRELOAD
+  # import user directory to termux-red
+  for i in $(ls $PREFIX); do
+    if ! [ -d $PREFIX/../termux-red/$i ];then
+	ln -s "$PREFIX/$i" "$PREFIX/../termux-red/"
+    fi
+  done
 
-# mount point chroot
-# mount Linux file system android:
-for f in system vendor data storage sdcard sbin root sys dev proc; do
-        ARGS="$ARGS -b /$f:/$f"
-done
+  # exit shell termux
+  unset LD_PRELOAD
 
-# set sdcard to home
-if [ -d $HOME ];then
+  # mount point chroot
+  # mount Linux file system android:
+  for f in system vendor data storage sdcard sbin root sys dev proc; do
+    if [ -d /$f ];then
+	ARGS="$ARGS -b /$f:/$f"
+    fi
+  done
+
+  # set sdcard to home
+  if [ -d $HOME ];then
 	ARGS="$ARGS -b $HOME:/home"
-fi
+  fi
 
-# Set /home as current directory:
-ARGS="$ARGS --cwd=/home"
+  # Set /home as current directory:
+  ARGS="$ARGS --cwd=/home"
 
-# set /kali-linux
-linux="kali-linux"
-if [ -d $PREFIX/../$linux ];then
+  # set /kali-linux
+  linux="kali-linux"
+  if [ -d $PREFIX/../$linux ];then
 	ARGS="$ARGS -b $PREFIX/../$linux:/$linux"
-fi
+  fi
 
-# Root of the file system:
-ARGS="$ARGS -r /data/data/com.termux/files/termux-red/"
+  # Root of the file system:
+  ARGS="$ARGS -r /data/data/com.termux/files/termux-red/"
 
-# Shell to execute:
-PROGRAM=/bin/bash
-if [ -x $HOME/.termux/shell ]; then
+  # Shell to execute:
+  PROGRAM=/bin/bash
+  if [ -x $HOME/.termux/shell ]; then
         PROGRAM=`readlink -f $HOME/.termux/shell`
-fi
+  fi
 
-# export variable need
-export SHELL=/bin/bash
-export HOME=/home
-export SHOME=/sdcard/termux_home
-export -n PREFIX
+  # export variable need
+  export SHELL=/bin/bash
+  export HOME=/home
+  export SHOME=/sdcard/termux_home
+  export -n PREFIX
 
-# running shell no-root termux-proot
-if [ -f $PREFIX/bin/proot ]; then
-	ARGS="$ARGS $PROGRAM -l"
-	exec $PREFIX/bin/proot $ARGS
+  ARGS="$ARGS $PROGRAM -l"
+  exec $PREFIX/bin/proot $ARGS
+}
+
+#  check shell
+if [ -f /system/bin/su ] || [ -f /system/xbin/su ];then
+	exit
 else
+  # running shell no-root termux-proot
+  if [ -f $PREFIX/bin/proot ]; then
+	shellnoroot
+  else
 	apt install proot
+  fi
 fi
