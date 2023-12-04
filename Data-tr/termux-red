@@ -72,7 +72,6 @@ shellnoroot(){
   export HOME=/home
   export SHOME=/sdcard/termux_home
   export -n PREFIX
-
   ARGS="$ARGS $PROGRAM -l"
   exec $PREFIX/bin/proot $ARGS
 }
@@ -84,6 +83,9 @@ else
   # running shell no-root termux-proot
   if [ -f $PREFIX/bin/proot ]; then
 	shellnoroot
+	if ! [ -f $PREFIX/bin/xfce4-terminal ];then
+		apt install xfce4-terminal
+	fi
   else
 	apt install proot
   fi
