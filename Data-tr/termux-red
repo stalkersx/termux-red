@@ -7,59 +7,53 @@ shellnoroot(){
 	exit
   fi
 
-  # login shell termux-red or distro-linux
-  #read -p "[t]termux-red [k]kali-linux ? " loginshell
-  #if [[ $loginshell == "t" ]];then echo
-  #elif [[ $loginshell == "k" ]];then
-  #  if [ -f $PREFIX/../kali-linux/start-kali.sh ];then
-  #    $PREFIX/../kali-linux/start-kali.sh
-  #  else
-  #    echo "! kali-linux not installed"
-  #  fi
-  #  exit
-  #else
-  #  exit
-  #fi
-
-  # check directory chroot
+  # check directory termux-red
   if ! [ -d $PREFIX/../termux-red ];then
 	mkdir $PREFIX/../termux-red
   fi
 
-  # import user directory to termux-red
-  for i in $(ls $PREFIX); do
-    if ! [ -d $PREFIX/../termux-red/$i ];then
-	ln -s "$PREFIX/$i" "$PREFIX/../termux-red/"
-    fi
-  done
-
   # exit shell termux
   unset LD_PRELOAD
 
+  # Kill processes on exit to avoid hanging on exit
+  ARGS="--kill-on-exit"
+
   # mount point chroot
   # mount Linux file system android:
-  for f in system vendor data storage sdcard sbin root sys dev proc; do
+  for f in apex system vendor data storage sdcard sbin root sys dev proc; do
     if [ -d /$f ];then
-	ARGS="$ARGS -b /$f:/$f"
+	  ARGS="$ARGS -b /$f:/$f"
     fi
   done
-
-  # set sdcard to home
-  if [ -d $HOME ];then
-	ARGS="$ARGS -b $HOME:/home"
+  
+  # Android 11.
+  if [ -e "/linkerconfig/ld.config.txt" ]; then
+	ARGS="$ARGS -b /linkerconfig/ld.config.txt:/linkerconfig/ld.config.txt"
   fi
+
+  if [ -f /property_contexts ]; then
+	# Used by getprop (see https://github.com/termux/termux-packages/issues/1076)
+	# but does not exist on Android 8.
+	ARGS="$ARGS -b /property_contexts:/property_contexts"
+  fi
+  
+  # Mimic traditional Linux file system hierarchy - other Termux dirs:
+  for l in bin etc include lib libexec share tmp var; do
+     ARGS="$ARGS -b $PREFIX/$l:/$l"
+  done
+  
+  # set sdcard to home
+  for k in home kali-linux;do
+    if [ -d $PREFIX/../$k ];then
+    	ARGS="$ARGS -b $PREFIX/../$k:/$k"
+	fi
+  done
 
   # Set /home as current directory:
   ARGS="$ARGS --cwd=/home"
 
-  # set /kali-linux
-  linux="kali-linux"
-  if [ -d $PREFIX/../$linux ];then
-	ARGS="$ARGS -b $PREFIX/../$linux:/$linux"
-  fi
-
   # Root of the file system:
-  ARGS="$ARGS -r /data/data/com.termux/files/termux-red/"
+  ARGS="$ARGS -r $PREFIX/../termux-red"
 
   # Shell to execute:
   PROGRAM=/bin/bash
@@ -76,17 +70,12 @@ shellnoroot(){
   exec $PREFIX/bin/proot $ARGS
 }
 
-#  check shell
-if [ -f /system/bin/su ] || [ -f /system/xbin/su ];then
-	exit
-else
-  # running shell no-root termux-proot
-  if [ -f $PREFIX/bin/proot ]; then
+# running shell no-root termux-proot
+if [ -f $PREFIX/bin/proot ]; then
 	shellnoroot
 	if ! [ -f $PREFIX/bin/xfce4-terminal ];then
 		apt install xfce4-terminal
 	fi
-  else
+else
 	apt install proot
-  fi
 fi
