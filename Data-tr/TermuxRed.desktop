@@ -3,8 +3,8 @@ Version=1.0
 Type=Application
 Name=TermuxRed
 Comment=run terminal virtual linux
-Exec=xfce4-terminal -x termux-red
-Icon=/data/data/com.termux/files/home/github/termux-red/Data-tr/icon-termux-red.png
+Exec=xfce4-terminal --title="TermuxRed" -x termux-red
+Icon=/data/data/com.termux/files/home/github/termux-red/Data-tr/teng_logo.png
 Path=
 Terminal=false
 StartupNotify=true
